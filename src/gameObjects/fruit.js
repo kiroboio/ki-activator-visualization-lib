@@ -1,6 +1,7 @@
 import { inside } from "../utils";
 import { createCatchEffect } from "./catchEffect";
 import { createCollectEffect } from "./collectEffect";
+import { createExplosion } from "./explosion";
 
 const polygon = [
   { x: 88, y: 298 },
@@ -65,147 +66,151 @@ const getRandomFruitInstantiationPos = (k, X_OFFSET, FRUITS_POS) => () => {
   return _pos;
 };
 
-export const createFruit = (k, X_OFFSET, FRUITS_POS) => (address, amount) => {
-  const availabilityState = k.state("available", ["available", "pending"]);
+export const createFruit =
+  (k, X_OFFSET, FRUITS_POS) => (address, amount, isAvailable) => {
+    const availabilityState = k.state("available", ["available", "pending"]);
 
-  const fruit = k.add([
-    // k.sprite('fruits', {
-    //     // frame: k.choose(Array(6).fill().map((_, i) => (i * 38) + 9)),
-    //     frame: k.randi(38 * 6),
-    // }),
-    // k.sprite("apple_normal"),
-    // k.sprite("coin", { anim: "rotate" }),
-    k.sprite(k.choose(["gold_coin"]), { anim: "rotate" }),
-    // k.sprite(k.choose(['apple_rotten', 'apple_normal', 'apple_golden'])),
-    // k.choose([
-    //   k.sprite("fruits", {
-    //     // frame: choose(Array(6).fill().map((_, i) => (i * 38) + 9)),
-    //     frame: k.randi(38 * 6),
-    //   }),
-    // ]),
-    // k.sprite('kirobo_logo'),
-    k.state("created", ["created", "idle", "dropping", "collected"]),
+    const fruit = k.add([
+      // k.sprite('fruits', {
+      //     // frame: k.choose(Array(6).fill().map((_, i) => (i * 38) + 9)),
+      //     frame: k.randi(38 * 6),
+      // }),
+      k.sprite("apple_normal"),
+      // k.sprite("coin", { anim: "rotate" }),
+      // k.sprite(k.choose(["gold_coin"]), { anim: "rotate" }),
+      // k.sprite(k.choose(['apple_rotten', 'apple_normal', 'apple_golden'])),
+      // k.choose([
+      //   k.sprite("fruits", {
+      //     // frame: choose(Array(6).fill().map((_, i) => (i * 38) + 9)),
+      //     frame: k.randi(38 * 6),
+      //   }),
+      // ]),
+      // k.sprite('kirobo_logo'),
+      k.state("created", ["created", "idle", "dropping", "collected"]),
 
-    k.z(0),
-    k.pos(getRandomFruitInstantiationPos(k, X_OFFSET, FRUITS_POS)()),
-    k.area(),
-    k.scale(0),
-    k.outline(2),
-    k.origin("center"),
-    "apple",
-    "fruit",
-    address,
-    {
-      key: address,
-      speed: k.rand(4, 6),
-    },
-  ]);
+      k.z(0),
+      k.pos(getRandomFruitInstantiationPos(k, X_OFFSET, FRUITS_POS)()),
+      k.area(),
+      k.scale(0),
+      k.outline(2),
+      k.origin("center"),
+      "apple",
+      "fruit",
+      address,
+      {
+        key: address,
+        speed: k.rand(4, 6),
+        availabilityState,
+      },
+    ]);
 
-  const coin = k.add([
-    k.z(2),
-    k.sprite("gold_coin", { anim: "rotate" }),
-    k.pos(k.vec2(fruit.pos).add(k.vec2(13, 0))),
-    k.origin("right"),
-    k.scale(0.05),
-    k.opacity(0),
-  ]);
+    const coin = k.add([
+      k.z(2),
+      k.sprite("gold_coin", { anim: "rotate" }),
+      k.pos(k.vec2(fruit.pos).add(k.vec2(13, 0))),
+      k.origin("right"),
+      k.scale(0.05),
+      k.opacity(0),
+    ]);
 
-  const clock = k.add([
-    k.sprite("clock"),
-    k.pos(fruit.pos.x + 7, fruit.pos.y - 15),
-    k.scale(0),
-    k.opacity(0),
-  ]);
+    const clock = k.add([
+      k.sprite("clock"),
+      k.pos(fruit.pos.x + 7, fruit.pos.y - 15),
+      k.scale(0),
+      k.opacity(0),
+    ]);
 
-  const instantiation_pos = k.vec2(fruit.pos);
+    const instantiation_pos = k.vec2(fruit.pos);
 
-  const rewards = k.add([
-    k.text(`+${Number(amount).toLocaleString()}`, {
-      size: 14,
-    }),
-    k.scale(0),
-    k.origin("left"),
-    k.color(),
-    k.pos(fruit.pos.x + 15, fruit.pos.y),
-    {
-      ySpeed: k.randi(3, 2),
-    },
-  ]);
+    const rewards = k.add([
+      k.text(`+${Number(amount).toLocaleString()}`, {
+        size: 14,
+      }),
+      k.scale(0),
+      k.origin("left"),
+      k.color(),
+      k.pos(fruit.pos.x + 15, fruit.pos.y),
+      {
+        ySpeed: k.randi(3, 2),
+      },
+    ]);
 
-  const destroyFruitComponents = () => {
-    fruit.destroy();
-    rewards.destroy();
-    clock.destroy();
-    coin.destroy();
-  };
-
-  fruit.onUpdate(() => {
-    rewards.pos.x = fruit.pos.x + 15;
-    rewards.pos.y = fruit.pos.y;
-
-    coin.pos.x = fruit.pos.x + 13;
-    coin.pos.y = fruit.pos.y;
-
-    clock.pos.x = fruit.pos.x + 4;
-    clock.pos.y = fruit.pos.y - 15;
-  });
-
-  fruit.onStateUpdate("created", () => {
-    const fruitScale = 1.4;
-    
-    fruit.scaleTo(k.lerp(fruit.scale.x, fruitScale, 0.1));
-    rewards.scaleTo(k.lerp(rewards.scale.x, 0.7, 0.1));
-    clock.scaleTo(k.lerp(clock.scale.x, 0.4, 0.1));
-
-    if (Math.round(fruit.scale.x * 100) / 100 >= fruitScale) {
-      fruit.enterState("idle");
-    }
-  });
-
-  fruit.onStateUpdate("idle", () => {
-    fruit.pos.y = k.wave(
-      instantiation_pos.y - 2,
-      instantiation_pos.y + 2,
-      k.time() * fruit.speed
-    );
-  });
-
-  fruit.onStateEnter("dropping", () => {
-    fruit.use(k.body());
-
-    fruit.z = 10;
-    rewards.z = 10;
-    clock.z = 10;
-
-    fruit.onCollide("operator", (operator) => {
-      if (fruit.collectorId != operator._id) return;
-
-      const effectPos = k.vec2(
-        operator.pos.x,
-        operator.pos.y - operator.height
-      );
-
-      fruit.enterState("collected");
-      destroyFruitComponents();
-      createCollectEffect(k)(operator);
-      createCatchEffect(k)(rewards.text, effectPos);
+    fruit.onDestroy(() => {
+      rewards.destroy();
+      clock.destroy();
+      coin.destroy();
     });
-  });
 
-  fruit.enterState("created");
+    fruit.onUpdate(() => {
+      rewards.pos.x = fruit.pos.x + 15;
+      rewards.pos.y = fruit.pos.y;
 
-  availabilityState.onStateEnter("pending", () => {
-    clock.opacity = 1;
-  });
+      coin.pos.x = fruit.pos.x + 13;
+      coin.pos.y = fruit.pos.y;
 
-  availabilityState.onStateEnter("available", () => {
-    clock.opacity = 0;
-  });
+      clock.pos.x = fruit.pos.x + 4;
+      clock.pos.y = fruit.pos.y - 15;
+    });
 
-  // availabilityState.enterState("pending");
+    fruit.onStateUpdate("created", () => {
+      const fruitScale = 0.8;
 
-  return {
-    fruit,
-    rewards,
+      fruit.scaleTo(k.lerp(fruit.scale.x, fruitScale, 0.1));
+      rewards.scaleTo(k.lerp(rewards.scale.x, 0.7, 0.1));
+      clock.scaleTo(k.lerp(clock.scale.x, 0.4, 0.1));
+
+      if (Math.round(fruit.scale.x * 100) / 100 >= fruitScale) {
+        fruit.enterState("idle");
+      }
+    });
+
+    fruit.onStateUpdate("idle", () => {
+      fruit.pos.y = k.wave(
+        instantiation_pos.y - 2,
+        instantiation_pos.y + 2,
+        k.time() * fruit.speed
+      );
+    });
+
+    fruit.onStateEnter("dropping", () => {
+      fruit.use(k.body());
+
+      fruit.z = 10;
+      rewards.z = 10;
+      clock.z = 10;
+
+      fruit.onCollide("operator", (operator) => {
+        if (fruit.collectorId != operator._id) return;
+
+        const effectPos = k.vec2(
+          operator.pos.x,
+          operator.pos.y - operator.height
+        );
+
+        fruit.enterState("collected");
+        fruit.destroy();
+        createCollectEffect(k)(operator);
+        createCatchEffect(k)(rewards.text, effectPos);
+      });
+    });
+
+    fruit.enterState("created");
+
+    availabilityState.onStateEnter("pending", () => {
+      clock.opacity = 1;
+      fruit.use(sprite("apple_golden"));
+    });
+
+    availabilityState.onStateEnter("available", () => {
+      clock.opacity = 0;
+      fruit.use(sprite("apple_normal"));
+      createExplosion(k)(fruit.pos);
+    });
+
+    availabilityState.enterState(isAvailable ? "available" : "pending");
+
+    return {
+      fruit,
+      rewards,
+    };
   };
-};

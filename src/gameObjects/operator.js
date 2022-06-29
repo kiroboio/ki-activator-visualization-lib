@@ -73,7 +73,6 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
   const fruitsMap = {};
 
   const addFruitToPickup = (fruit) => {
-    console.log("addFruitToPickup");
     if (!operator.fruitsToPickup.includes(fruit)) {
       operator.fruitsToPickup.push(fruit);
     }
@@ -146,7 +145,6 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
     }
 
     operator.z = 2;
-    blurOtherOperators();
 
     addFruitToPickup(fruit);
     fruit.collectorId = operator._id;
@@ -158,7 +156,6 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
         higherState.enterState("run-to-target", nextFruitToPickup);
       } else {
         higherState.enterState("random");
-        setTimeout(unblurAllOperators, 1000);
       }
     });
 
