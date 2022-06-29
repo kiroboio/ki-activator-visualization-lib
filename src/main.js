@@ -8,7 +8,7 @@ import {
   setFruitAvailability,
 } from "./utils/game_utils";
 
-function createGame(options) {
+export function createGame(options) {
   const k = kaboom({
     width: 1000,
     height: 430,
