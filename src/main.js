@@ -17,7 +17,7 @@ function createGame(options) {
     background: [0, 0, 0, 0],
     font: "sinko",
     // crisp:true,
-    debug:false,
+    debug: false,
     ...options,
   });
 

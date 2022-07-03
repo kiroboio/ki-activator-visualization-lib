@@ -1,3 +1,4 @@
+export const isGameObj = (obj) => obj.tag === "gameObject";
 export const collectFruit =
   (k) =>
   (fruitTag, operatorTag = "operator", callback) => {
@@ -32,6 +33,19 @@ export const cubic = (a, b, c, d, t) => {
   return a * (t * t * t) + b * (t * t) + c * t + d;
 };
 
-export const isRoundEq = (a, b) => {
-  return Math.round(a * 100) / 100 === Math.round(b * 100) / 100;
+export const isRoundEq = (a, b, tollerance) => {
+  const aRounded = Math.round(a * 100) / 100;
+  const bRounded = Math.round(b * 100) / 100;
+  const offset = aRounded === bRounded;
+  return tollerance ? Math.abs(aRounded - bRounded) < tollerance : offset;
+};
+
+export const getClosestFruit = (k) => () => {
+  const fruits = k.get("fruit");
+  return fruits.reduce((prev, curr) => {
+    if (prev.pos.dist(operator.pos) > curr.pos.dist(operator.pos)) {
+      return curr;
+    }
+    return prev;
+  });
 };

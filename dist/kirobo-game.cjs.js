@@ -88,8 +88,11 @@ const setFruitAvailability = (k) => (fruitTag, isAvailable) => {
   fruit.availabilityState.enterState(isAvailable ? "available" : "pending");
 };
 
-const isRoundEq = (a, b) => {
-  return Math.round(a * 100) / 100 === Math.round(b * 100) / 100;
+const isRoundEq = (a, b, tollerance) => {
+  const aRounded = Math.round(a * 100) / 100;
+  const bRounded = Math.round(b * 100) / 100;
+  const offset = aRounded === bRounded;
+  return tollerance ? Math.abs(aRounded - bRounded) < tollerance : offset;
 };
 
 const createCircleCheck = (k) => (pos) => {
@@ -168,7 +171,6 @@ const getProjectileVelocity = (startingPos, targetPos, speed) => {
   const vx = dx / t;
   const vy = speed * Math.sin(angle) - (g * t) / 2;
 
-  
   return { vx, vy };
 };
 
@@ -237,57 +239,54 @@ const createCatchEffect = (k) => (str, _pos) => {
   kiro_logo.enterState("created");
 };
 
-const createCollectEffect = k => (operator) => {
-    const effect = k.add([
-        k.sprite('collect'),
-        k.pos(operator),
-        k.scale(1.3),
-        k.origin('bot'),
-        k.outline(2),
-        k.z(9)
-    ]);
-    const effect2 = k.add([
-        k.sprite('collect'),
-        k.pos(operator),
-        k.scale(1.9),
-        k.origin('bot'),
-        k.opacity(0.2),
-        k.outline(2),
-        k.z(9)
-    ]);
+const createCollectEffect = (k) => (operator) => {
+  const effect = k.add([
+    k.sprite("collect"),
+    k.pos(operator),
+    k.scale(1.3),
+    k.origin("bot"),
+    k.outline(2),
+    k.z(9),
+  ]);
+  const effect2 = k.add([
+    k.sprite("collect"),
+    k.pos(operator),
+    k.scale(1.9),
+    k.origin("bot"),
+    k.opacity(0.2),
+    k.outline(2),
+    k.z(9),
+  ]);
 
-    operator.onUpdate(() => {
-        effect2.pos.x = operator.pos.x;
-        effect2.pos.y = operator.pos.y;
-        effect.pos.x = operator.pos.x;
-        effect.pos.y = operator.pos.y;
-    });
+  operator.onUpdate(() => {
+    effect2.pos.x = operator.pos.x;
+    effect2.pos.y = operator.pos.y;
+    effect.pos.x = operator.pos.x;
+    effect.pos.y = operator.pos.y;
+  });
 
-    effect.play('collect', {
-        onEnd: () => {
-            effect.destroy();
-            effect2.destroy();
-        }
-    });
-    effect2.play('collect', {
-        speed: 15
-    });
+  effect.play("collect");
+  effect2.play("collect", {
+    speed: 15,
+  });
 
-    return effect
+  effect.onAnimEnd("collect", () => {
+    effect.destroy();
+    effect2.destroy();
+  });
+
+  return effect;
 };
 
-const createExplosion = k => (vec) => {
-    const explosion = k.add([
-        k.pos(vec),
-        k.origin('center'),
-        k.sprite('explosion', { anim: 'explode', animSpeed: 1.5 }),
-    ]);
+const createExplosion = (k) => (vec) => {
+  const explosion = k.add([
+    k.pos(vec),
+    k.origin("center"),
+    k.sprite("explosion"),
+  ]);
 
-    explosion.play('explode', {
-        onEnd: () => {
-            explosion.destroy();
-        }
-    });
+  explosion.play("explode");
+  explosion.onAnimEnd("explode", () => explosion.destroy());
 };
 
 const polygon = [
@@ -520,7 +519,7 @@ const createProjectile = (k) => (startingPos, target) => {
 
   projectile.onStateUpdate("shoot", () => {
     projectile.pos.x += vx * k.dt();
-    projectile.pos.y += vy* k.dt();
+    projectile.pos.y += vy * k.dt();
     vy += GRAVITY * dt();
   });
 
@@ -663,7 +662,6 @@ const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
   operator.onStateLeave("run", decreaseSpeed);
 
   operator.onStateEnter("throw", (target) => {
-    // scaleState.enterState("scale-up");
     operator.setDir(operator.getDir(target.pos));
     operator.projectile = createProjectile(k)(getProjectilePos(), target);
     operator.projectile.enterState("shoot");
@@ -700,17 +698,16 @@ const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
   });
 
   higherState.onStateUpdate("run-to-target", () => {
-    const operatorX = Math.round(operator.pos.x * 100) / 100;
-    const fruitX = Math.round(operator.nextFruitToPickup.pos.x * 100) / 100;
+    const operatorX = operator.pos.x;
+    const fruitX = operator.nextFruitToPickup.pos.x;
 
-    if (operatorX === fruitX) {
+    if (isRoundEq(operatorX, fruitX, 3)) {
       operator.enterState("idle");
     }
   });
 
   higherState.onStateEnter("collect", (keyTag, callback) => {
     if (keyTag === undefined) return console.error("keyTag is undefined");
-
     const fruit = k.get(keyTag)[0];
     if (!fruit) {
       console.error("Something went wrong, no fruit found, keyTag:", keyTag);
@@ -719,7 +716,7 @@ const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
 
     operator.z = 2;
 
-    if (circleCheck === null || circleCheck.state === "destroy") {
+    if (circleCheck == null || circleCheck.state == "destroy") {
       circleCheck = createCircleCheck(k)(operator.pos.sub(0, operator.height));
     }
 
@@ -731,16 +728,15 @@ const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
       if (callback) callback(keyTag);
 
       removeFruitFromPickup(fruit);
-      const nextFruitToPickup = getNextFruitToPickUp();
-      if (nextFruitToPickup) {
-        operator.nextFruitToPickup = nextFruitToPickup;
-        higherState.enterState("run-to-target", nextFruitToPickup);
+      const nextFruit = getNextFruitToPickUp();
+      if (nextFruit) {
+        operator.nextFruitToPickup = nextFruit;
+        higherState.enterState("run-to-target", nextFruit);
       } else {
         operator.nextFruitToPickup = null;
         scaleState.enterState("scale-down");
         higherState.enterState("random");
         circleCheck.enterState("destroy");
-
         circleCheck.onDestroy(() => {
           operator.higherState.enterState("collect", "fruit");
         });
@@ -969,7 +965,7 @@ function createGame(options) {
     background: [0, 0, 0, 0],
     font: "sinko",
     // crisp:true,
-    debug:false,
+    debug: false,
     ...options,
   });
 
