@@ -1,4 +1,5 @@
 import kaboom from "kaboom";
+import { createCircleCheck } from "./gameObjects/checkIcon";
 import { createFruit } from "./gameObjects/fruit";
 import { createOperator } from "./gameObjects/operator";
 import { preload } from "./preload";
@@ -8,7 +9,7 @@ import {
   setFruitAvailability,
 } from "./utils/game_utils";
 
-export function createGame(options) {
+function createGame(options) {
   const k = kaboom({
     width: 1000,
     height: 430,
@@ -72,6 +73,7 @@ export function createGame(options) {
     destroyFruit: destroyFruit(k),
     collectFruit: collectFruit(k),
     setFruitAvailability: setFruitAvailability(k),
+    createCircleCheck: createCircleCheck(k),
   };
 }
 

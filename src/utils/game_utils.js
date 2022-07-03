@@ -1,6 +1,6 @@
 export const collectFruit =
   (k) =>
-  (fruitTag, operatorTag = "operator") => {
+  (fruitTag, operatorTag = "operator", callback) => {
     if (!fruitTag) return console.error("fruitTag is required");
 
     const fruit = k.get(fruitTag)[0];
@@ -9,7 +9,7 @@ export const collectFruit =
     const operator = k.get(operatorTag)[0] || k.get("operator")[0];
     if (!operator) return console.error("operator not found", operatorTag);
 
-    operator.higherState.enterState("collect", fruitTag);
+    operator.higherState.enterState("collect", fruitTag, callback);
   };
 
 export const destroyFruit = (k) => (fruitTag) => {

@@ -1,13 +1,15 @@
 import { distance } from "../utils";
+import { createCircleCheck } from "./checkIcon";
 import { createProjectile } from "./projectile";
 
 export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
   const dir = k.choose([k.LEFT, k.RIGHT]);
-  const higherState = k.state("random", [
-    "random",
-    "clear-random",
-    "run-to-target",
-    "collect",
+  const higherState = k.add([
+    k.state("random", ["random", "clear-random", "run-to-target", "collect"]),
+  ]);
+
+  const scaleState = k.add([
+    k.state("idle", ["idle", "scale-up", "scale-down"]),
   ]);
 
   const operator = k.add([
@@ -30,6 +32,7 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
       dir: dir,
       speed: k.rand(40, 50),
       fruitsToPickup: [],
+      nextFruitToPickup: null,
       higherState,
       setDir(dir) {
         this.dir = dir;
@@ -41,6 +44,8 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
     },
   ]);
 
+  let circleCheck = null;
+
   const moveOperator = () => {
     if (operator.pos.x > k.width() - X_OFFSET) {
       operator.setDir(LEFT);
@@ -48,6 +53,10 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
       operator.setDir(RIGHT);
     }
     operator.move(operator.dir.scale(operator.speed * operator.acc));
+
+    if (circleCheck) {
+      circleCheck.pos.x = operator.pos.x;
+    }
   };
 
   const getProjectilePos = () => {
@@ -70,8 +79,6 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
     return closestFruit.fruit;
   };
 
-  const fruitsMap = {};
-
   const addFruitToPickup = (fruit) => {
     if (!operator.fruitsToPickup.includes(fruit)) {
       operator.fruitsToPickup.push(fruit);
@@ -93,18 +100,18 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
     operator.acc = 1;
   };
 
-  const blurOtherOperators = () => {
-    const others = k
-      .get("operator")
-      .filter(
-        (o) => !["collect", "run-to-target"].includes(o.higherState.state)
-      );
-    others.forEach((o) => (o.opacity = 0.3));
-  };
+  // const blurOtherOperators = () => {
+  //   const others = k
+  //     .get("operator")
+  //     .filter(
+  //       (o) => !["collect", "run-to-target"].includes(o.higherState.state)
+  //     );
+  //   others.forEach((o) => (o.opacity = 0.3));
+  // };
 
-  const unblurAllOperators = () => {
-    k.get("operator").forEach((o) => (o.opacity = 1));
-  };
+  // const unblurAllOperators = () => {
+  //   k.get("operator").forEach((o) => (o.opacity = 1));
+  // };
 
   operator.onStateEnter("idle", operator.play.bind(null, "idle"));
 
@@ -116,6 +123,7 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
   operator.onStateLeave("run", decreaseSpeed);
 
   operator.onStateEnter("throw", (target) => {
+    // scaleState.enterState("scale-up");
     operator.setDir(operator.getDir(target.pos));
     operator.projectile = createProjectile(k)(getProjectilePos(), target);
     operator.projectile.enterState("shoot");
@@ -130,12 +138,37 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
     });
   });
 
+  scaleState.onStateUpdate("scale-up", () => {
+    const scale = 1.3;
+    operator.scaleTo(k.lerp(operator.scale.x, scale, 0.3));
+    if (Math.round(operator.scale.x * 100) / 100 == scale) {
+      setTimeout(() => {
+        scaleState.enterState("idle");
+      }, 300);
+    }
+  });
+  scaleState.onStateUpdate("scale-down", () => {
+    operator.scaleTo(k.lerp(operator.scale.x, 1, 0.3));
+    if (Math.round(operator.scale.x * 100) / 100 == 1) {
+      scaleState.enterState("idle");
+    }
+  });
+
   higherState.onStateEnter("run-to-target", (target) => {
     operator.setDir(operator.getDir(target.pos));
     operator.enterState("run");
   });
 
-  higherState.onStateEnter("collect", (keyTag) => {
+  higherState.onStateUpdate("run-to-target", () => {
+    const operatorX = Math.round(operator.pos.x * 100) / 100;
+    const fruitX = Math.round(operator.nextFruitToPickup.pos.x * 100) / 100;
+
+    if (operatorX === fruitX) {
+      operator.enterState("idle");
+    }
+  });
+
+  higherState.onStateEnter("collect", (keyTag, callback) => {
     if (keyTag === undefined) return console.error("keyTag is undefined");
 
     const fruit = k.get(keyTag)[0];
@@ -146,21 +179,35 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
 
     operator.z = 2;
 
+    if (!circleCheck) {
+      circleCheck = createCircleCheck(k)(operator.pos.sub(0, operator.height));
+    }
+
     addFruitToPickup(fruit);
+    operator.nextFruitToPickup = fruit;
     fruit.collectorId = operator._id;
 
     fruit.onStateEnter("collected", () => {
+      if(callback) callback(keyTag)
+      
       removeFruitFromPickup(fruit);
       const nextFruitToPickup = getNextFruitToPickUp();
       if (nextFruitToPickup) {
+        operator.nextFruitToPickup = nextFruitToPickup;
         higherState.enterState("run-to-target", nextFruitToPickup);
       } else {
+        operator.nextFruitToPickup = null;
+        scaleState.enterState("scale-down");
         higherState.enterState("random");
+        circleCheck.enterState("destroy");
+        circleCheck = null;
       }
     });
 
     higherState.enterState("clear-random");
-    operator.enterState("throw", fruit);
+    setTimeout(() => {
+      operator.enterState("throw", fruit);
+    }, 800);
   });
 
   higherState.onStateEnter("random", () => {

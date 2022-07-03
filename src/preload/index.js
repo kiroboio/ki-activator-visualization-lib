@@ -4,6 +4,7 @@ import apple_rotten from "../assets/images/apple_rotten.png";
 import rock from "../assets/images/rock.png";
 import hourglass from "../assets/images/hourglass.png";
 import check from "../assets/images/check.png";
+import circle_check from "../assets/images/circle_check.png";
 import clock from "../assets/images/clock.png";
 import coin from "../assets/images/coin.png";
 import gold_coin from "../assets/images/gold_coin.png";
@@ -27,6 +28,7 @@ export const preload = (k) => {
 
   k.loadSprite("bg", bg);
   k.loadSprite("bg2", bg2);
+  k.loadSprite("rock", rock);
   k.loadSprite("clock", clock);
   k.loadSprite("check", check);
   k.loadSprite("hourglass", hourglass);
@@ -34,7 +36,7 @@ export const preload = (k) => {
   k.loadSprite("apple_golden", apple_golden);
   k.loadSprite("apple_normal", apple_normal);
   k.loadSprite("apple_rotten", apple_rotten);
-  k.loadSprite("rock", rock);
+  k.loadSprite("circle_check", circle_check);
 
   k.loadSprite("coin", coin, {
     sliceX: 6,
