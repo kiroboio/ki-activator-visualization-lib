@@ -27,3 +27,7 @@ export const setFruitAvailability = (k) => (fruitTag, isAvailable) => {
   if (!fruit) return console.error("fruit not found", fruitTag);
   fruit.availabilityState.enterState(isAvailable ? "available" : "pending");
 };
+
+export const cubic = (a, b, c, d, t) => {
+  return a * (t * t * t) + b * (t * t) + c * t + d;
+};

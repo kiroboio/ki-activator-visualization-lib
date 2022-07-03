@@ -22,7 +22,7 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
     k.pos(k.rand(X_OFFSET, k.width() - X_OFFSET), GROUND_Y),
     k.area(),
     k.origin("bot"),
-    k.outline(2),
+    k.outline(2, "rgba(255, 255, 255, 0.5)"),
     k.scale(1),
     k.opacity(1),
     {

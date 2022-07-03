@@ -15,6 +15,8 @@ export function createGame(options) {
     scale: 1,
     background: [0, 0, 0, 0],
     font: "sinko",
+    // crisp:true,
+    debug:false,
     ...options,
   });
 

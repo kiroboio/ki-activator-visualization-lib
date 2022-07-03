@@ -1,4 +1,9 @@
+import { cubic } from "../utils/game_utils";
+
 export const createCatchEffect = (k) => (str, _pos) => {
+  const moveDir = k.UP;
+  const moveSpeed = 45;
+
   const kiro_logo = k.add([
     k.z(2),
     k.sprite("kirobo_logo"),
@@ -6,7 +11,8 @@ export const createCatchEffect = (k) => (str, _pos) => {
     k.origin("right"),
     k.scale(0),
     k.opacity(1),
-    k.move(k.vec2(0, -100), 30),
+    k.move(moveDir, moveSpeed),
+    k.state("created", ["created", "disappear"]),
   ]);
 
   const coin = k.add([
@@ -16,7 +22,7 @@ export const createCatchEffect = (k) => (str, _pos) => {
     k.origin("right"),
     k.scale(0),
     k.opacity(1),
-    k.move(k.vec2(0, -100), 30),
+    k.move(moveDir, moveSpeed),
   ]);
 
   const rewards = k.add([
@@ -28,18 +34,22 @@ export const createCatchEffect = (k) => (str, _pos) => {
     k.opacity(1),
     k.scale(0.5),
     k.origin("left"),
+    k.move(moveDir, moveSpeed),
   ]);
 
-  kiro_logo.onUpdate(() => {
-    rewards.pos.y = kiro_logo.pos.y;
-
+  kiro_logo.onStateUpdate("created", () => {
     rewards.scaleTo(k.lerp(rewards.scale.x, 0.8, 0.1));
     kiro_logo.scaleTo(k.lerp(kiro_logo.scale.x, 0.6, 0.1));
     coin.scaleTo(k.lerp(coin.scale.x, 0.6, 0.1));
+    setTimeout(() => {
+      kiro_logo.enterState("disappear");
+    }, 1300);
+  });
 
-    rewards.opacity -= 0.002;
-    kiro_logo.opacity -= 0.002;
-    coin.opacity -= 0.002;
+  kiro_logo.onStateUpdate("disappear", () => {
+    rewards.opacity -= 1 * k.dt();
+    kiro_logo.opacity -= 1 * k.dt();
+    coin.opacity -= 1 * k.dt();
 
     if (rewards.opacity < 0) {
       rewards.destroy();
@@ -47,4 +57,6 @@ export const createCatchEffect = (k) => (str, _pos) => {
       coin.destroy();
     }
   });
+
+  kiro_logo.enterState("created");
 };
