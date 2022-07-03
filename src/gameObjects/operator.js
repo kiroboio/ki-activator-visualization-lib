@@ -177,7 +177,7 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
 
     operator.z = 2;
 
-    if (circleCheck == null || circleCheck.state == "destroy") {
+    if (!circleCheck || circleCheck.state == "destroy") {
       circleCheck = createCircleCheck(k)(operator.pos.sub(0, operator.height));
     }
 
@@ -198,9 +198,6 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
         scaleState.enterState("scale-down");
         higherState.enterState("random");
         circleCheck.enterState("destroy");
-        circleCheck.onDestroy(() => {
-          operator.higherState.enterState("collect", "fruit");
-        });
       }
     });
 

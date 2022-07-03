@@ -104,15 +104,6 @@ export const createFruit =
       },
     ]);
 
-    const coin = k.add([
-      k.z(2),
-      k.sprite("gold_coin", { anim: "rotate" }),
-      k.pos(k.vec2(fruit.pos).add(k.vec2(13, 0))),
-      k.origin("right"),
-      k.scale(0.05),
-      k.opacity(0),
-    ]);
-
     const clock = k.add([
       k.sprite("clock"),
       k.pos(fruit.pos.x + 7, fruit.pos.y - 15),
@@ -138,15 +129,11 @@ export const createFruit =
     fruit.onDestroy(() => {
       rewards.destroy();
       clock.destroy();
-      coin.destroy();
     });
 
     fruit.onUpdate(() => {
       rewards.pos.x = fruit.pos.x + 15;
       rewards.pos.y = fruit.pos.y;
-
-      coin.pos.x = fruit.pos.x + 13;
-      coin.pos.y = fruit.pos.y;
 
       clock.pos.x = fruit.pos.x + 4;
       clock.pos.y = fruit.pos.y - 15;
