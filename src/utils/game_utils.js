@@ -31,3 +31,7 @@ export const setFruitAvailability = (k) => (fruitTag, isAvailable) => {
 export const cubic = (a, b, c, d, t) => {
   return a * (t * t * t) + b * (t * t) + c * t + d;
 };
+
+export const isRoundEq = (a, b) => {
+  return Math.round(a * 100) / 100 === Math.round(b * 100) / 100;
+};

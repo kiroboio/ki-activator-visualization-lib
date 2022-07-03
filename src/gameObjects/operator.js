@@ -53,7 +53,6 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
       operator.setDir(RIGHT);
     }
     operator.move(operator.dir.scale(operator.speed * operator.acc));
-
     if (circleCheck) {
       circleCheck.pos.x = operator.pos.x;
     }
@@ -179,7 +178,7 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
 
     operator.z = 2;
 
-    if (!circleCheck) {
+    if (circleCheck === null || circleCheck.state === "destroy") {
       circleCheck = createCircleCheck(k)(operator.pos.sub(0, operator.height));
     }
 
@@ -188,8 +187,8 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
     fruit.collectorId = operator._id;
 
     fruit.onStateEnter("collected", () => {
-      if(callback) callback(keyTag)
-      
+      if (callback) callback(keyTag);
+
       removeFruitFromPickup(fruit);
       const nextFruitToPickup = getNextFruitToPickUp();
       if (nextFruitToPickup) {
@@ -200,7 +199,10 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
         scaleState.enterState("scale-down");
         higherState.enterState("random");
         circleCheck.enterState("destroy");
-        circleCheck = null;
+
+        circleCheck.onDestroy(() => {
+          operator.higherState.enterState("collect", "fruit");
+        });
       }
     });
 
