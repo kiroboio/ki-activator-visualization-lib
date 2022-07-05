@@ -1,3 +1,5 @@
+import { isRoundEq } from "../utils/game_utils";
+
 export const createCircleCheck = (k) => (pos) => {
   const check = k.add([
     "check",
@@ -8,6 +10,7 @@ export const createCircleCheck = (k) => (pos) => {
     k.opacity(0),
     k.state("idle", ["idle", "created", "destroy"]),
   ]);
+
   const waveSpeed = k.rand(7, 8);
 
   check.onUpdate(() => {
@@ -17,15 +20,15 @@ export const createCircleCheck = (k) => (pos) => {
   check.onStateUpdate("created", () => {
     check.scaleTo(k.lerp(check.scale.x, 1, 0.1));
     check.opacity = k.lerp(check.opacity, 1, 0.1);
-    if (Math.round(check.scale.x * 100) / 100 >= 1) {
+    if (isRoundEq(check.scale.x, 1)) {
       check.enterState("idle");
     }
   });
 
-  check.onStateUpdate("destroy", () => {
+  check.onStateUpdate("destroy", (callback) => {
     check.scaleTo(k.lerp(check.scale.x, 0, 0.1));
 
-    if (Math.round(check.scale.x * 100) / 100 == 0) {
+    if (isRoundEq(check.scale.x, 0)) {
       check.destroy();
     }
   });

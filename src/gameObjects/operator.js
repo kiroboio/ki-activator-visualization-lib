@@ -1,4 +1,5 @@
 import { distance } from "../utils";
+import { isRoundEq } from "../utils/game_utils";
 import { createCircleCheck } from "./checkIcon";
 import { createProjectile } from "./projectile";
 
@@ -53,7 +54,6 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
       operator.setDir(RIGHT);
     }
     operator.move(operator.dir.scale(operator.speed * operator.acc));
-
     if (circleCheck) {
       circleCheck.pos.x = operator.pos.x;
     }
@@ -123,7 +123,6 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
   operator.onStateLeave("run", decreaseSpeed);
 
   operator.onStateEnter("throw", (target) => {
-    // scaleState.enterState("scale-up");
     operator.setDir(operator.getDir(target.pos));
     operator.projectile = createProjectile(k)(getProjectilePos(), target);
     operator.projectile.enterState("shoot");
@@ -160,17 +159,16 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
   });
 
   higherState.onStateUpdate("run-to-target", () => {
-    const operatorX = Math.round(operator.pos.x * 100) / 100;
-    const fruitX = Math.round(operator.nextFruitToPickup.pos.x * 100) / 100;
+    const operatorX = operator.pos.x;
+    const fruitX = operator.nextFruitToPickup.pos.x;
 
-    if (operatorX === fruitX) {
+    if (isRoundEq(operatorX, fruitX, 3)) {
       operator.enterState("idle");
     }
   });
 
   higherState.onStateEnter("collect", (keyTag, callback) => {
     if (keyTag === undefined) return console.error("keyTag is undefined");
-
     const fruit = k.get(keyTag)[0];
     if (!fruit) {
       console.error("Something went wrong, no fruit found, keyTag:", keyTag);
@@ -179,7 +177,7 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
 
     operator.z = 2;
 
-    if (!circleCheck) {
+    if (!circleCheck || circleCheck.state == "destroy") {
       circleCheck = createCircleCheck(k)(operator.pos.sub(0, operator.height));
     }
 
@@ -188,19 +186,18 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
     fruit.collectorId = operator._id;
 
     fruit.onStateEnter("collected", () => {
-      if(callback) callback(keyTag)
-      
+      if (callback) callback(keyTag);
+
       removeFruitFromPickup(fruit);
-      const nextFruitToPickup = getNextFruitToPickUp();
-      if (nextFruitToPickup) {
-        operator.nextFruitToPickup = nextFruitToPickup;
-        higherState.enterState("run-to-target", nextFruitToPickup);
+      const nextFruit = getNextFruitToPickUp();
+      if (nextFruit) {
+        operator.nextFruitToPickup = nextFruit;
+        higherState.enterState("run-to-target", nextFruit);
       } else {
         operator.nextFruitToPickup = null;
         scaleState.enterState("scale-down");
         higherState.enterState("random");
         circleCheck.enterState("destroy");
-        circleCheck = null;
       }
     });
 

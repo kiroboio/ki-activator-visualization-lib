@@ -20,7 +20,7 @@ export const createProjectile = (k) => (startingPos, target) => {
 
   projectile.onStateUpdate("shoot", () => {
     projectile.pos.x += vx * k.dt();
-    projectile.pos.y += vy* k.dt();
+    projectile.pos.y += vy * k.dt();
     vy += GRAVITY * dt();
   });
 
