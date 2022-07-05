@@ -1,3 +1,4 @@
+import { Z_CATCH_EFFECT } from "../consts";
 import { cubic } from "../utils/game_utils";
 
 export const createCatchEffect = (k) => (str, _pos) => {
@@ -5,7 +6,7 @@ export const createCatchEffect = (k) => (str, _pos) => {
   const moveSpeed = 45;
 
   const kiro_logo = k.add([
-    k.z(2),
+    k.z(Z_CATCH_EFFECT),
     k.sprite("kirobo_logo"),
     k.pos(_pos),
     k.origin("right"),
@@ -15,18 +16,8 @@ export const createCatchEffect = (k) => (str, _pos) => {
     k.state("created", ["created", "disappear"]),
   ]);
 
-  const coin = k.add([
-    k.z(2),
-    k.sprite("gold_coin", { anim: "rotate" }),
-    k.pos(_pos.add(k.vec2(9, 0))),
-    k.origin("right"),
-    k.scale(0),
-    k.opacity(1),
-    k.move(moveDir, moveSpeed),
-  ]);
-
   const rewards = k.add([
-    k.z(2),
+    k.z(Z_CATCH_EFFECT),
     k.text(str, { size: 12 }),
     k.color(0, 255, 0),
     k.pos(_pos.add(k.vec2(10, 0))),
@@ -40,7 +31,6 @@ export const createCatchEffect = (k) => (str, _pos) => {
   kiro_logo.onStateUpdate("created", () => {
     rewards.scaleTo(k.lerp(rewards.scale.x, 0.8, 0.1));
     kiro_logo.scaleTo(k.lerp(kiro_logo.scale.x, 0.6, 0.1));
-    coin.scaleTo(k.lerp(coin.scale.x, 0.6, 0.1));
     setTimeout(() => {
       kiro_logo.enterState("disappear");
     }, 1300);
@@ -49,12 +39,10 @@ export const createCatchEffect = (k) => (str, _pos) => {
   kiro_logo.onStateUpdate("disappear", () => {
     rewards.opacity -= 1 * k.dt();
     kiro_logo.opacity -= 1 * k.dt();
-    coin.opacity -= 1 * k.dt();
 
     if (rewards.opacity < 0) {
       rewards.destroy();
       kiro_logo.destroy();
-      coin.destroy();
     }
   });
 

@@ -36,7 +36,7 @@ export const getProjectileVelocity = (startingPos, targetPos, speed) => {
   const vx = dx / t;
   const vy = speed * Math.sin(angle) - (g * t) / 2;
 
-  return { vx, vy };
+  return { vx, vy,  };
 };
 
 export const isOutOfScreen = (k) => (pos) => {

@@ -1,4 +1,4 @@
-const required = (arg, errorMessage) => {
+export const required = (arg, errorMessage) => {
   if (!arg) throw new Error(errorMessage);
   return arg;
 };
@@ -7,7 +7,7 @@ const requiredFruitTag = (f) => required(f, "fruitTag not found");
 const requiredFruit = (f) => required(f, "fruit not found");
 const requiredOpertaor = (o) => required(o, "operator not found");
 
-const withErrorHandle = (func) => {
+export const withErrorHandle = (func) => {
   try {
     return func();
   } catch (e) {

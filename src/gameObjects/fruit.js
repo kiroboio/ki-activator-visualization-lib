@@ -94,6 +94,7 @@ export const createFruit =
       k.sprite("clock"),
       k.pos(fruit.pos.x + 7, fruit.pos.y - 15),
       k.scale(0),
+      k.z(Z_FRUIT),
       k.opacity(0),
     ]);
 
@@ -148,9 +149,9 @@ export const createFruit =
     fruit.onStateEnter("dropping", () => {
       fruit.use(k.body());
 
-      fruit.z = 10;
-      rewards.z = 10;
-      clock.z = 10;
+      fruit.z = Z_FRUIT + 1;
+      rewards.z = Z_FRUIT + 1;
+      clock.z = Z_FRUIT + 1;
 
       fruit.onCollide("operator", (operator) => {
         if (fruit.collectorId != operator._id) return;
@@ -171,12 +172,12 @@ export const createFruit =
 
     availabilityState.onStateEnter("pending", () => {
       clock.opacity = 1;
-      fruit.use(sprite("apple_golden"));
+      fruit.use(k.sprite("apple_golden"));
     });
 
     availabilityState.onStateEnter("available", () => {
       clock.opacity = 0;
-      fruit.use(sprite("apple_normal"));
+      fruit.use(k.sprite("apple_normal"));
       createExplosion(k)(fruit.pos);
     });
 

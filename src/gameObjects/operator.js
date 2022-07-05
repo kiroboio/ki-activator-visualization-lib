@@ -1,5 +1,6 @@
+import { Z_OPERATOR } from "../consts";
 import { distance } from "../utils";
-import { isRoundEq } from "../utils/game_utils";
+import { isRoundEq, withErrorHandle } from "../utils/game_utils";
 import { createCircleCheck } from "./checkIcon";
 import { createProjectile } from "./projectile";
 
@@ -16,7 +17,7 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
   const operator = k.add([
     address,
     "operator",
-    k.z(1),
+    k.z(Z_OPERATOR),
     k.sprite(k.choose(["monster2", "owlet", "dude"]), {
       anim: "idle",
       flipX: dir === k.LEFT,
@@ -159,12 +160,14 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
   });
 
   higherState.onStateUpdate("run-to-target", () => {
-    const operatorX = operator.pos.x;
-    const fruitX = operator.nextFruitToPickup.pos.x;
+    return withErrorHandle(() => {
+      const operatorX = operator.pos.x;
+      const fruitX = operator.nextFruitToPickup.pos.x;
 
-    if (isRoundEq(operatorX, fruitX, 3)) {
-      operator.enterState("idle");
-    }
+      if (isRoundEq(operatorX, fruitX, 3)) {
+        operator.enterState("idle");
+      }
+    });
   });
 
   higherState.onStateEnter("collect", (keyTag, callback) => {
@@ -175,7 +178,7 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
       return higherState.enterState("random");
     }
 
-    operator.z = 2;
+    operator.z = Z_OPERATOR + 1;
 
     if (!circleCheck || circleCheck.state == "destroy") {
       circleCheck = createCircleCheck(k)(operator.pos.sub(0, operator.height));
@@ -209,7 +212,7 @@ export const createOperator = (k, X_OFFSET, GROUND_Y) => (address) => {
 
   higherState.onStateEnter("random", () => {
     operator.enterState("idle");
-    operator.z = 1;
+    operator.z = Z_OPERATOR;
 
     operator.interval = setInterval(() => {
       const state = k.choose(["idle", "walk"]);

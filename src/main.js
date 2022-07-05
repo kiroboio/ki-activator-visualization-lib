@@ -21,8 +21,19 @@ function createGame(options) {
     debug: false,
     ...options,
   });
+  const _sprite = k.sprite;
+  const sprites = new Set();
+  k.sprite = (...args) => {
+    console.log("args[0]:", args[0]);
+    sprites.add(args[0]);
+    console.log("sprites:", sprites);
 
-  preload(k);
+    return _sprite(...args);
+  };
+
+  preload(k).then(() => {
+    console.log("preload loaded:");
+  });
 
   // const GROUND_Y = height() - 80
   const GROUND_Y = height() - 20;
@@ -32,22 +43,25 @@ function createGame(options) {
     bottom: height() - 100,
   };
 
-  k.add([
-    k.sprite("bg2"),
-    k.opacity(1),
-    k.pos(k.width() / 2, k.height()),
-    k.origin("bot"),
-    k.z(Z_BG),
-  ]);
+  k.onLoad(() => {
+    console.log("game load");
+    k.add([
+      k.sprite("bg2"),
+      k.opacity(1),
+      k.pos(k.width() / 2, k.height()),
+      k.origin("bot"),
+      k.z(Z_BG),
+    ]);
 
-  k.add([
-    k.solid(),
-    k.area(),
-    k.rect(k.width(), 0),
-    k.pos(0, GROUND_Y - 4),
-    k.z(Z_FLOOR),
-    "ground",
-  ]);
+    k.add([
+      k.solid(),
+      k.area(),
+      k.rect(k.width(), 0),
+      k.pos(0, GROUND_Y - 4),
+      k.z(Z_FLOOR),
+      "ground",
+    ]);
+  });
   // window.polygon = []
   // k.onUpdate(() => {
   // 	const last = window.polygon[window.polygon.length - 1]
