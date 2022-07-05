@@ -1,3 +1,4 @@
+import { Z_FRUIT } from "../consts";
 import { inside } from "../utils";
 import { createCatchEffect } from "./catchEffect";
 import { createCollectEffect } from "./collectEffect";
@@ -71,24 +72,9 @@ export const createFruit =
     const availabilityState = k.state("available", ["available", "pending"]);
 
     const fruit = k.add([
-      // k.sprite('fruits', {
-      //     // frame: k.choose(Array(6).fill().map((_, i) => (i * 38) + 9)),
-      //     frame: k.randi(38 * 6),
-      // }),
       k.sprite("apple_normal"),
-      // k.sprite("coin", { anim: "rotate" }),
-      // k.sprite(k.choose(["gold_coin"]), { anim: "rotate" }),
-      // k.sprite(k.choose(['apple_rotten', 'apple_normal', 'apple_golden'])),
-      // k.choose([
-      //   k.sprite("fruits", {
-      //     // frame: choose(Array(6).fill().map((_, i) => (i * 38) + 9)),
-      //     frame: k.randi(38 * 6),
-      //   }),
-      // ]),
-      // k.sprite('kirobo_logo'),
       k.state("created", ["created", "idle", "dropping", "collected"]),
-
-      k.z(0),
+      k.z(Z_FRUIT),
       k.pos(getRandomFruitInstantiationPos(k, X_OFFSET, FRUITS_POS)()),
       k.area(),
       k.scale(0),

@@ -1,4 +1,5 @@
 import kaboom from "kaboom";
+import { Z_BG, Z_FLOOR } from "./consts";
 import { createCircleCheck } from "./gameObjects/checkIcon";
 import { createFruit } from "./gameObjects/fruit";
 import { createOperator } from "./gameObjects/operator";
@@ -17,7 +18,7 @@ function createGame(options) {
     background: [0, 0, 0, 0],
     font: "sinko",
     // crisp:true,
-    debug:false,
+    debug: false,
     ...options,
   });
 
@@ -36,6 +37,7 @@ function createGame(options) {
     k.opacity(1),
     k.pos(k.width() / 2, k.height()),
     k.origin("bot"),
+    k.z(Z_BG),
   ]);
 
   k.add([
@@ -43,7 +45,7 @@ function createGame(options) {
     k.area(),
     k.rect(k.width(), 0),
     k.pos(0, GROUND_Y - 4),
-    k.z(-1),
+    k.z(Z_FLOOR),
     "ground",
   ]);
   // window.polygon = []
