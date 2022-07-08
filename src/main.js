@@ -10,7 +10,7 @@ import {
   setFruitAvailability,
 } from "./utils/game_utils";
 
-function createGame(options) {
+export function createGame(options) {
   const k = kaboom({
     width: 1000,
     height: 430,
@@ -92,7 +92,3 @@ function createGame(options) {
     createCircleCheck: createCircleCheck(k),
   };
 }
-
-module.exports = {
-  createGame,
-};

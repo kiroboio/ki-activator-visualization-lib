@@ -5,20 +5,24 @@
   "module": "dist/kirobo-game.esm.js",
   "browser": "dist/kirobo-game.umd.js",
   "dependencies": {
+    "@rollup/plugin-typescript": "^8.3.3",
     "kaboom": "^2000.2.9",
-    "ms": "^2.0.0"
+    "ms": "^2.0.0",
+    "rollup-plugin-typescript2": "^0.32.1",
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.1",
     "@rollup/plugin-image": "^2.1.1",
     "@rollup/plugin-node-resolve": "^7.0.0",
     "@rollup/plugin-url": "^7.0.0",
-    "rollup": "^1.29.0",
+    "rollup": "^2.14.0",
     "rollup-plugin-image": "^1.0.2",
     "rollup-plugin-image-files": "^1.4.2",
     "rollup-plugin-img": "^1.1.0",
     "rollup-plugin-import-file": "^1.0.1",
-    "rollup-plugin-smart-asset": "^2.1.2"
+    "rollup-plugin-smart-asset": "^2.1.2",
+    "typescript": "^4.7.4"
   },
   "scripts": {
     "build": "rollup -c",
